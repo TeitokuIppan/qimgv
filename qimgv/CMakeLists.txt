@@ -8,7 +8,7 @@ if(APPLE)
 endif()
 
 # TRANSLATIONS
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 # Example of creating a new translation file.
 # 1. cd into qimgv directory and run:
 #   lupdate -recursive . -ts res/translations/qimgv_en_US.ts    [replace "en_US" with your locale]
@@ -26,14 +26,6 @@ set(TS_FILES
 list(TRANSFORM TS_FILES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/res/translations/)
 set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION ${PROJECT_BINARY_DIR}/qimgv/translations)
 
-# 1. Create 'qimgv_lupdate' target to update .ts files (needs to be called manually)
-# 2. Compile .ts > .qm
-if(${QT_VERSION_MAJOR} EQUAL 5)
-    add_custom_target(qimgv_lupdate COMMAND ${Qt5_LUPDATE_EXECUTABLE} -recursive
-        ${CMAKE_CURRENT_SOURCE_DIR} -ts ${TS_FILES})
-    qt5_add_translation(QM_FILES ${TS_FILES})
-endif()
-
 # ADD EXECUTABLE
 add_executable(qimgv
     appversion.cpp
@@ -48,14 +40,11 @@ add_executable(qimgv
     resources.qrc
     qimgv.rc
     ${APPLE_ICON_PATH}
-    ${QM_FILES}
 )
 
-# update .ts, compile .qm (qt6 case)
-if(${QT_VERSION_MAJOR} EQUAL 6)
-    qt_add_lupdate(qimgv TS_FILES ${TS_FILES})
-    qt_add_lrelease(qimgv TS_FILES ${TS_FILES})
-endif()
+# Update .ts and compile .qm files.
+qt_add_lupdate(qimgv TS_FILES ${TS_FILES})
+qt_add_lrelease(qimgv TS_FILES ${TS_FILES})
 
 # ADD SOURCES
 add_subdirectory(components)
@@ -71,10 +60,13 @@ target_compile_features(qimgv PRIVATE cxx_std_17)
 set_target_properties(qimgv PROPERTIES CXX_EXTENSIONS OFF)
 
 # LINK STUFF
-target_link_libraries(qimgv PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg Qt${QT_VERSION_MAJOR}::PrintSupport)
-if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-    target_link_libraries(qimgv PRIVATE Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
-endif()
+target_link_libraries(qimgv PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Svg
+    Qt6::PrintSupport
+    Qt6::OpenGLWidgets
+)
 
 # OPTION DEFINITIONS, LINKING
 if(EXIV2)
@@ -140,8 +132,7 @@ foreach(icon IN ITEMS 16x16 22x22 24x24 32x32 36x36 48x48 64x64 128x128 256x256)
     install(FILES distrib/hicolor/${icon}/apps/qimgv.png DESTINATION
         ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor/${icon}/apps)
 endforeach()
-install(FILES distrib/hicolor/scalable/apps/qimgv.svg
-    DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor/scalable/apps)
+install(FILES distrib/hicolor/scalable/apps/qimgv.svg DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor/scalable/apps)
 
 # AppData manifest
 install(FILES distrib/qimgv.appdata.xml DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/metainfo)
