@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 project(player_mpv
     DESCRIPTION "video player widget for qimgv (using mpv)"
     LANGUAGES CXX)
@@ -8,8 +8,7 @@ set(CMAKE_AUTOMOC ON)
 # only export CreatePlayerWidget function
 ADD_DEFINITIONS(-DQIMGV_PLAYER_MPV_LIBRARY)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets OpenGLWidgets)
 
 if(NOT WIN32)
     find_package(PkgConfig REQUIRED)
@@ -28,14 +27,18 @@ target_compile_features(player_mpv PRIVATE cxx_std_11)
 
 if(WIN32)
     target_link_libraries(player_mpv PRIVATE
-        Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets Mpv)
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::OpenGLWidgets
+        Mpv
+    )
 else()
     target_link_libraries(player_mpv PRIVATE
-        Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets PkgConfig::Mpv)
-endif()
-
-if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-    target_link_libraries(player_mpv PRIVATE Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::OpenGLWidgets
+        PkgConfig::Mpv
+    )
 endif()
 
 set_target_properties(player_mpv PROPERTIES
